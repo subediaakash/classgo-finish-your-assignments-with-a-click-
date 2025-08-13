@@ -9,7 +9,6 @@ export default function Home() {
 
       {/* Hero Section */}
       <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center relative">
-        {/* Coming Soon Badge */}
         <div className="mb-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 glass-panel border border-emerald-200/40 rounded-full text-emerald-700 font-medium text-sm shadow-sm">
             <span className="relative flex h-2 w-2">
@@ -33,12 +32,10 @@ export default function Home() {
             AI-powered personalization with proven therapeutic methods.
           </p>
 
-          {/* Primary CTA inline for desktop */}
           <div className="hidden sm:flex justify-center">
             <WaitlistForm />
           </div>
 
-          {/* Social proof */}
           <div className="mt-6 text-xs sm:text-sm text-gray-500 flex items-center justify-center gap-2">
             <div className="flex -space-x-2">
               <span className="w-6 h-6 rounded-full bg-emerald-200 border border-white" />
@@ -49,7 +46,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Waitlist Form mobile */}
         <div className="sm:hidden mb-12 relative z-10 w-full max-w-lg">
           <WaitlistForm />
           <p className="text-sm text-gray-500 mt-3 text-center">
