@@ -2,7 +2,7 @@
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 font-aleo">
-      <h1 className="text-4xl font-bold ">Everything is Possible Untill You Never Give Up</h1>
+      <h1 className="text-4xl font-bold ">&quot;Everything is Possible Untill You Never Give Up&quot;</h1>
       <p className="font-bold text-2xl">DETOX IT</p>
     </div>
   );
