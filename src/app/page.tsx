@@ -3,11 +3,9 @@ import { WaitlistForm } from "@/components/waitlist/waitlist-form";
 export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* Decorative Background */}
       <div className="absolute inset-0 bg-grid-fade pointer-events-none" />
       <div className="aurora absolute -inset-1" />
 
-      {/* Hero Section */}
       <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center relative">
         <div className="mb-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 glass-panel border border-emerald-200/40 rounded-full text-emerald-700 font-medium text-sm shadow-sm">
@@ -19,7 +17,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Main Heading */}
         <div className="max-w-4xl mx-auto mb-8 relative z-10">
           <h1 className="font-serif text-5xl md:text-7xl font-bold text-gray-900 leading-tight mb-6 tracking-tight">
             Break Free with{" "}
