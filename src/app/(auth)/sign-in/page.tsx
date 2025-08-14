@@ -1,14 +1,42 @@
 'use client';
 import React from "react";
-
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 export default function SignInPage() {
-    const handleEmailSignIn = (e: React.FormEvent) => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+
+    const handleEmailSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Email sign-in submitted");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { data, error } = await authClient.signIn.email({
+            email,
+            password,
+            callbackURL: "/",
+        }, {
+            onError: (ctx) => {
+                if (ctx.error.status === 403) {
+                    alert("Please verify your email address");
+                }
+                alert(ctx.error.message);
+            }
+        }
+        );
+        if (error) {
+            console.log("Sign in failed", error);
+            return;
+        }
+        toast("Sign in successful");
+
     };
 
-    const handleGoogleSignIn = () => {
-        console.log("Google sign-in clicked");
+    const handleGoogleSignIn = async () => {
+        const data = await authClient.signIn.social({
+            provider: "google"
+        })
+        console.log("Google Sign In initiated", data);
     };
 
     return (
@@ -26,6 +54,7 @@ export default function SignInPage() {
                             id="email"
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             required
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
 
@@ -34,6 +63,7 @@ export default function SignInPage() {
                             Password
                         </label>
                         <input
+                            onChange={(e) => setPassword(e.target.value)}
                             type="password"
                             id="password"
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"

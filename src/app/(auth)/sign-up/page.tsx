@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const signUpSchema = z
     .object({
@@ -16,6 +17,8 @@ const signUpSchema = z
     });
 
 export default function SignUpPage() {
+    const router = useRouter();
+
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -39,6 +42,10 @@ export default function SignUpPage() {
                 email: formData.email,
                 password: formData.password,
                 callbackURL: "/",
+            }, {
+                onSuccess: () => {
+                    router.push("/verification-reminder");
+                }
             });
 
             if (error) {
