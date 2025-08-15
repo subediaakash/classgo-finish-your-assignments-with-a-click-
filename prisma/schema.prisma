@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -10,15 +9,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String      @id @default(uuid())
   name          String
   email         String
+  dateOfBirth   DateTime?
   emailVerified Boolean
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  Addiction     Addiction[]
 
   @@unique([email])
   @@map("user")
@@ -67,4 +68,57 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Addiction {
+  id                   String        @id @default(uuid())
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                 ADDICTIONTYPE
+  expectedStartDate    DateTime?
+  addictionDescription String
+  Detox                Detox[]
+}
+
+model Detox {
+  id          String      @id @default(uuid())
+  addictionId String
+  addiction   Addiction   @relation(fields: [addictionId], references: [id], onDelete: Cascade)
+  startDate   DateTime
+  endDate     DateTime?
+  status      DETOXSTATUS
+  createdAt   DateTime
+  updatedAt   DateTime
+  Solution    Plans[]
+  streak      Int         @default(0)
+
+  @@map("detox")
+}
+
+model Plans {
+  id        String   @id @default(uuid())
+  detoxId   String
+  detox     Detox    @relation(fields: [detoxId], references: [id], onDelete: Cascade)
+  week      Int
+  day       Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+enum DETOXSTATUS {
+  ONGOING
+  COMPLETED
+  FAILED
+}
+
+enum ADDICTIONTYPE {
+  ALCOHOL
+  TOBACCO
+  GAMBLING
+  DRUGS
+  FOOD
+  PORNOGRAPHY
+  SOCIAL_MEDIA
+  OTHER
 }
