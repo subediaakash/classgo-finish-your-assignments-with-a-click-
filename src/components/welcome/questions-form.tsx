@@ -7,6 +7,8 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function QuestionsForm() {
   const [api, setApi] = useState<CarouselApi>();
@@ -15,6 +17,7 @@ export default function QuestionsForm() {
   const [addiction, setAddiction] = useState("");
   const [experience, setExperience] = useState("");
   const [goal, setGoal] = useState("");
+  const router = useRouter();
 
   const totalSlides = 3;
 
@@ -63,15 +66,21 @@ export default function QuestionsForm() {
 
   const handleSubmit = () => {
     if (!isSlide1Valid() || !isSlide2Valid()) {
-      alert("Please complete all required fields before submitting.");
+      toast("Please complete all required fields before submitting.");
       return;
     }
 
-    alert(`
-        Addiction: ${addiction}
-        Experience: ${experience}
-        Goal: ${goal}
-        `);
+    const fullMessage = {
+      Addiction: addiction,
+      Experience: experience,
+      Goal: goal,
+    };
+
+    // Encode the message object as a URL-safe string
+    const encodedMessage = encodeURIComponent(JSON.stringify(fullMessage));
+
+    // Navigate to the dynamic route
+    router.push(`/analyser/${encodedMessage}`);
   };
 
   const canGoNext = () => {
