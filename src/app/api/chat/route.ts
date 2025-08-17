@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const response = await client.responses.create({
       model: "gpt-4.1",
       instructions:
-        "You are a doctor who helps patients detox from addictions. Return a detailed 7-day detox plan in bullet point format.",
+        "You are a doctor who helps patients detox from addictions. Return a detailed 7-day detox plan in bullet point format. you have to return only the 7 days plan and no other text only the seven days plan",
       input,
     });
 
