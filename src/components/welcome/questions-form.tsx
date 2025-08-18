@@ -10,13 +10,26 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+const addictionOptions = [
+  { value: "ALCOHOL", label: "Alcohol" },
+  { value: "TOBACCO", label: "Tobacco" },
+  { value: "GAMBLING", label: "Gambling" },
+  { value: "DRUGS", label: "Drugs" },
+  { value: "FOOD", label: "Food" },
+  { value: "PORNOGRAPHY", label: "Pornography" },
+  { value: "SOCIAL_MEDIA", label: "Social Media" },
+  { value: "OTHER", label: "Other" },
+];
+
 export default function QuestionsForm() {
   const [api, setApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const [addiction, setAddiction] = useState("");
+  const [addictionType, setAddictionType] = useState("");
+  const [otherAddiction, setOtherAddiction] = useState("");
   const [experience, setExperience] = useState("");
   const [goal, setGoal] = useState("");
+
   const router = useRouter();
 
   const totalSlides = 3;
@@ -35,7 +48,10 @@ export default function QuestionsForm() {
   }, [api]);
 
   const isSlide1Valid = () => {
-    return addiction.trim() !== "" && experience.trim() !== "";
+    const hasAddictionType = addictionType.trim() !== "";
+    const hasOtherSpecified = addictionType !== "OTHER" || otherAddiction.trim() !== "";
+    const hasExperience = experience.trim() !== "";
+    return hasAddictionType && hasOtherSpecified && hasExperience;
   };
 
   const isSlide2Valid = () => {
@@ -71,15 +87,16 @@ export default function QuestionsForm() {
     }
 
     const fullMessage = {
-      Addiction: addiction,
+      AddictionType: addictionType,
+      OtherAddiction: addictionType === "OTHER" ? otherAddiction : null,
       Experience: experience,
       Goal: goal,
     };
-
+    console.log("----------------")
+    console.log("Full message to submit:", fullMessage);
     // Encode the message object as a URL-safe string
     const encodedMessage = encodeURIComponent(JSON.stringify(fullMessage));
 
-    // Navigate to the dynamic route
     router.push(`/analyser/${encodedMessage}`);
   };
 
@@ -117,14 +134,37 @@ export default function QuestionsForm() {
                     <label className="block text-sm font-medium text-emerald-700 mb-2">
                       What addiction do you want to detox from? *
                     </label>
-                    <input
-                      type="text"
-                      value={addiction}
-                      onChange={(e) => setAddiction(e.target.value)}
-                      placeholder="e.g., Social Media, Gaming, Alcohol..."
-                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                    />
+                    <select
+                      value={addictionType}
+                      onChange={(e) => {
+                        e.preventDefault();
+                        setAddictionType(e.target.value);
+                      }}
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
+                    >
+                      <option value="">Select an addiction type...</option>
+                      {addictionOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  {addictionType === "OTHER" && (
+                    <div>
+                      <label className="block text-sm font-medium text-emerald-700 mb-2">
+                        Please specify your addiction *
+                      </label>
+                      <input
+                        type="text"
+                        value={otherAddiction}
+                        onChange={(e) => setOtherAddiction(e.target.value)}
+                        placeholder="Please specify your addiction..."
+                        className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-emerald-700 mb-2">
@@ -217,7 +257,14 @@ export default function QuestionsForm() {
                       Addiction to Address:
                     </h3>
                     <p className="text-gray-900">
-                      {addiction || "Not provided"}
+                      {addictionType ? (
+                        addictionType === "OTHER" ?
+                          (otherAddiction || "Not specified") :
+                          (() => {
+                            const foundOption = addictionOptions.find(opt => opt.value === addictionType);
+                            return foundOption ? foundOption.label : addictionType;
+                          })()
+                      ) : "Not provided"}
                     </p>
                   </div>
 
@@ -264,18 +311,17 @@ export default function QuestionsForm() {
             {Array.from({ length: totalSlides }).map((_, index) => (
               <div
                 key={index}
-                className={`h-2 w-8 rounded-full transition-colors ${
-                  index === currentSlide
-                    ? "bg-blue-600"
-                    : index < currentSlide
-                      ? "bg-green-500"
-                      : "bg-gray-300"
-                }`}
+                className={`h-2 w-8 rounded-full transition-colors ${index === currentSlide
+                  ? "bg-blue-600"
+                  : index < currentSlide
+                    ? "bg-green-500"
+                    : "bg-gray-300"
+                  }`}
               />
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

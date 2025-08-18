@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import Markdown from 'react-markdown'
+
 
 interface ChatbotProps {
   message: string;
@@ -12,17 +14,19 @@ export default function Chatbot({ message }: ChatbotProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!message.trim()) return;
 
     setIsLoading(true);
-    setResponse(""); // Clear previous response
+    setResponse("");
 
     try {
       const requestBody = {
         input: message,
       };
 
+      console.log("Preparing to send request with message:", message);
+      console.log("Request body:", requestBody);
       console.log("Sending request:", JSON.stringify(requestBody, null, 2));
 
       const chatResponse = await fetch("/api/chat", {
@@ -60,7 +64,7 @@ export default function Chatbot({ message }: ChatbotProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [message]);
 
   // Automatically send message when component loads
   useEffect(() => {
@@ -68,38 +72,7 @@ export default function Chatbot({ message }: ChatbotProps) {
       setHasInitialized(true);
       sendMessage();
     }
-  }, [message, hasInitialized]);
-
-  const formatResponse = (text: string) => {
-    // Split by lines and format for better readability
-    return text.split("\n").map((line, index) => {
-      if (line.trim() === "") return <br key={index} />;
-
-      // Check if line starts with a number (day indicator)
-      if (/^\d+\./.test(line.trim())) {
-        return (
-          <div key={index} className="font-semibold text-emerald-700 mt-4 mb-2">
-            {line}
-          </div>
-        );
-      }
-
-      // Check if line starts with a dash (bullet point)
-      if (line.trim().startsWith("-")) {
-        return (
-          <div key={index} className="ml-4 mb-1 text-gray-700">
-            {line}
-          </div>
-        );
-      }
-
-      return (
-        <div key={index} className="mb-2 text-gray-800">
-          {line}
-        </div>
-      );
-    });
-  };
+  }, [message, hasInitialized, sendMessage]);
 
   return (
     <div className="w-full">
@@ -132,8 +105,20 @@ export default function Chatbot({ message }: ChatbotProps) {
 
       {response && !isLoading && (
         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-          <div className="prose prose-emerald max-w-none">
-            {formatResponse(response)}
+          <div className="prose prose-emerald max-w-none prose-headings:text-emerald-800 prose-strong:text-emerald-700 prose-p:text-gray-700 prose-li:text-gray-700">
+            <Markdown
+              components={{
+                h1: ({ children }) => <h1 className="text-2xl font-bold text-emerald-800 mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-xl font-semibold text-emerald-700 mb-3 mt-6">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-lg font-semibold text-emerald-600 mb-2 mt-4">{children}</h3>,
+                p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
+                ul: ({ children }) => <ul className="mb-4 space-y-1">{children}</ul>,
+                li: ({ children }) => <li className="ml-4 text-gray-700 list-disc">{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold text-emerald-700">{children}</strong>,
+              }}
+            >
+              {response}
+            </Markdown>
           </div>
         </div>
       )}

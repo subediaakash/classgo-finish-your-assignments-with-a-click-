@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Toaster } from "@/components/ui/sonner"
 import { Inter, Playfair_Display } from "next/font/google"
+
 import "./globals.css"
 
 const inter = Inter({

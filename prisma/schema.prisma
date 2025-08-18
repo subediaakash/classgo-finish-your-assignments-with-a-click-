@@ -75,6 +75,8 @@ model Addiction {
   userId               String
   user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   type                 ADDICTIONTYPE
+  otherType            String?
+  experience           String
   expectedStartDate    DateTime?
   addictionDescription String
   Detox                Detox[]
@@ -83,6 +85,7 @@ model Addiction {
 model Detox {
   id          String      @id @default(uuid())
   addictionId String
+  goal        String
   addiction   Addiction   @relation(fields: [addictionId], references: [id], onDelete: Cascade)
   startDate   DateTime
   endDate     DateTime?
