@@ -1,0 +1,5 @@
+{
+    "error": "Failed to fetch classroom data",
+    "details": "{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Request had insufficient authentication scopes.\",\n    \"status\": \"PERMISSION_DENIED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"ACCESS_TOKEN_SCOPE_INSUFFICIENT\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"classroom.googleapis.com\",\n          \"method\": \"google.classroom.v1.Courses.ListCourses\"\n        }\n      }\n    ]\n  }\n}\n",
+    "status": 403
+}
