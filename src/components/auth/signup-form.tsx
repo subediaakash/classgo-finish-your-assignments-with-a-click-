@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client";
 
 export default function SignUpForm() {
 
+
     const handleGoogleSignUp = async () => {
         try {
             await authClient.signIn.social({
