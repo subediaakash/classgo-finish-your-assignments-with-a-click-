@@ -20,7 +20,7 @@ interface SessionData {
     userAgent?: string | null;
 }
 
-interface Session {
+export interface Session {
     user: User;
     session: SessionData;
 }
@@ -63,7 +63,6 @@ export default function Dashboard() {
         }
 
         try {
-            // Use your backend API route instead of direct Google API calls
             const res = await fetch("/api/classroom", {
                 method: "GET",
                 headers: {
@@ -123,7 +122,7 @@ export default function Dashboard() {
                     <h2 className="text-xl font-semibold mb-2">Your Courses:</h2>
                     <ul className="space-y-2">
                         {courses.map((course: Course) => (
-                            <li key={course.id} className="bg-gray-100 p-3 rounded">
+                            <li key={course.id} className="bg-gray-100 p-3 rounded" onClick={() => window.location.href = `/courses/${course.id}`}>
                                 <h3 className="font-medium">{course.name}</h3>
                                 <p className="text-gray-600">{course.description}</p>
                             </li>

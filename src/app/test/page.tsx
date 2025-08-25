@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 export default function ClassroomPage() {
@@ -8,7 +7,8 @@ export default function ClassroomPage() {
     const requestGoogleClassRoomAcess = async () => {
         await authClient.linkSocial({
             provider: "google",
-            scopes: ["https://www.googleapis.com/auth/classroom.courses.readonly"],
+            scopes: ["https://www.googleapis.com/auth/classroom.courses.readonly",
+                "https://www.googleapis.com/auth/classroom.coursework.me.readonly"],
         });
     };
 
