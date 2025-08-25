@@ -33,7 +33,6 @@ export async function GET(
         { status: 400 }
       );
     }
-
     // Check if access token is expired
     if (
       googleAccount.accessTokenExpiresAt &&

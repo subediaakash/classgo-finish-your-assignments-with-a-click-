@@ -2,7 +2,7 @@
 'use client';
 
 import { authClient } from "@/lib/auth-client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Session } from "../page";
 
 interface CourseWorkType {
@@ -11,10 +11,10 @@ interface CourseWorkType {
 }
 
 interface PageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 export default function CoursePage({ params }: PageProps) {
-    const { id } = params;
+    const { id } = use(params);
     const [assignments, setAssignments] = useState<CourseWorkType[] | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
