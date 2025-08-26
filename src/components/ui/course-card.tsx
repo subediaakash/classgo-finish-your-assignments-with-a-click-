@@ -118,9 +118,6 @@ export function CourseCard({ course, onClick }: CourseCardProps) {
           </Link>
         </div>
       </div>
-
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-blue-600 bg-opacity-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
     </div>
   );
 }

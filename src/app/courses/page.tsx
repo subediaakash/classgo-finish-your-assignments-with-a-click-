@@ -47,7 +47,6 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [coursesLoaded, setCoursesLoaded] = useState(false);
 
   useEffect(() => {
     // Get session on component mount
@@ -98,7 +97,6 @@ export default function CoursesPage() {
 
       console.log("Courses:", data);
       setCourses(data.courses || []);
-      setCoursesLoaded(true);
     } catch (error) {
       console.error("Error:", error);
       setError("Network error. Please check your connection and try again.");
@@ -107,10 +105,16 @@ export default function CoursesPage() {
     }
   };
 
+  // Auto-load courses when session is available
+  useEffect(() => {
+    if (session && !coursesLoading && courses.length === 0 && !error) {
+      fetchCourses();
+    }
+  }, [session]);
+
   const handleSignOut = () => {
     setSession(null);
     setCourses([]);
-    setCoursesLoaded(false);
     setError(null);
   };
 
@@ -203,38 +207,6 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        {/* Action Section */}
-        {!coursesLoaded && !coursesLoading && !error && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-1">
-                  Ready to get started?
-                </h2>
-                <p className="text-gray-600">
-                  Load your courses from Google Classroom to see all your
-                  classes in one place.
-                </p>
-              </div>
-              <Button
-                onClick={fetchCourses}
-                size="lg"
-                className="bg-green-600 hover:bg-green-700"
-                disabled={coursesLoading}
-              >
-                {coursesLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Loading...
-                  </>
-                ) : (
-                  "Load My Courses"
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Loading State */}
         {coursesLoading && (
           <div>
@@ -262,7 +234,7 @@ export default function CoursesPage() {
         )}
 
         {/* Courses Grid */}
-        {coursesLoaded && !coursesLoading && !error && (
+        {!coursesLoading && !error && (
           <div>
             {courses.length > 0 ? (
               <>

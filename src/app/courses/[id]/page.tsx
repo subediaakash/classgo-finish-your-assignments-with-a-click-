@@ -69,9 +69,18 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+interface Course {
+  id: string;
+  name: string;
+  description?: string;
+  courseState?: string;
+  alternateLink?: string;
+}
+
 export default function CoursePage({ params }: PageProps) {
   const { id } = use(params);
   const [assignments, setAssignments] = useState<CourseWorkType[] | null>(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignmentsLoading, setAssignmentsLoading] = useState(false);
@@ -100,6 +109,47 @@ export default function CoursePage({ params }: PageProps) {
 
     getSession();
   }, []);
+
+  const fetchCourseInfo = async () => {
+    if (!session) return;
+
+    try {
+      // Try to get course list to find the course name
+      const res = await fetch("/api/classroom", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const courses = data.courses || [];
+        const currentCourse = courses.find(
+          (course: Course) => course.id === id
+        );
+
+        if (currentCourse) {
+          setCourse(currentCourse);
+        } else {
+          // Fallback if course not found in list
+          setCourse({
+            id: id,
+            name: `Course ${id}`,
+            courseState: "ACTIVE",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching course info:", error);
+      // Set fallback course info
+      setCourse({
+        id: id,
+        name: `Course ${id}`,
+        courseState: "ACTIVE",
+      });
+    }
+  };
 
   const fetchAssignments = async () => {
     if (!session) return;
@@ -136,6 +186,7 @@ export default function CoursePage({ params }: PageProps) {
 
   useEffect(() => {
     if (session) {
+      fetchCourseInfo();
       fetchAssignments();
     }
   }, [id, session]);
@@ -207,6 +258,7 @@ export default function CoursePage({ params }: PageProps) {
   const handleSignOut = () => {
     setSession(null);
     setAssignments(null);
+    setCourse(null);
   };
 
   if (loading) {
@@ -257,7 +309,7 @@ export default function CoursePage({ params }: PageProps) {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Courses", href: "/courses" },
-    { label: `Course ${id}`, current: true },
+    { label: course?.name || `Course ${id}`, current: true },
   ];
 
   return (
@@ -269,9 +321,12 @@ export default function CoursePage({ params }: PageProps) {
 
         <CourseHeader
           courseId={id}
-          courseName="Course Assignments"
+          courseName={course?.name || "Course Assignments"}
           assignmentCount={assignments?.length || 0}
-          onRefresh={fetchAssignments}
+          onRefresh={() => {
+            fetchCourseInfo();
+            fetchAssignments();
+          }}
           isLoading={assignmentsLoading}
         />
 
