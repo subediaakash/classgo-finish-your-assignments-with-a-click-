@@ -18,8 +18,14 @@ export default function ClassroomPage() {
                 "https://www.googleapis.com/auth/classroom.announcements",
                 "https://www.googleapis.com/auth/classroom.topics",
 
+
+                "https://www.googleapis.com/auth/classroom.addons.student",
+
                 // Guardian links (if needed)
                 "https://www.googleapis.com/auth/classroom.guardianlinks.students"],
+
+
+
 
         });
     };
