@@ -9,7 +9,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-md bg-gray-200 dark:bg-gray-800",
+        "animate-pulse rounded-md bg-muted",
         className
       )}
       {...props}
@@ -19,7 +19,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
 
 export function CourseCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
       {/* Header skeleton */}
       <Skeleton className="h-24 w-full rounded-none" />
 
@@ -56,8 +56,8 @@ export function PageHeaderSkeleton() {
 
 export function AssignmentCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
+      <div className="p-6 border-b border-border">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <Skeleton className="h-6 w-3/4 mb-2" />
@@ -84,7 +84,7 @@ export function AssignmentCardSkeleton() {
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-border pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-4 w-32" />

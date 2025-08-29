@@ -19,7 +19,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="text-center py-12">
-      <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+      <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
         {icon || (
           <svg
             className="w-12 h-12 text-gray-400"
@@ -36,8 +36,8 @@ export function EmptyState({
           </svg>
         )}
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600 mb-6 max-w-sm mx-auto">{description}</p>
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-sm mx-auto">{description}</p>
       {action && (
         <Button onClick={action.onClick} className="mx-auto">
           {action.label}
