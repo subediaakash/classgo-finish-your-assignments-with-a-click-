@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.launchuicomponents.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

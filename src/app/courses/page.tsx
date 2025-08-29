@@ -10,6 +10,9 @@ import {
   ErrorEmptyState,
 } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookOpenIcon, RefreshCwIcon, ArrowRightIcon } from "lucide-react";
 
 interface User {
   id: string;
@@ -120,11 +123,12 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex items-center justify-center h-screen">
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your session...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading your session...</p>
           </div>
         </div>
       </div>
@@ -133,36 +137,23 @@ export default function CoursesPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Header />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg
-                className="w-10 h-10 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <BookOpenIcon className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Welcome to Classroom
+            <h1 className="text-3xl font-bold text-foreground mb-4">
+              Welcome to ClassGo
             </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
-              Sign in with your Google account to access your courses and
-              assignments.
+            <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
+              Sign in with your Google account to access your courses and assignments.
             </p>
             <Button
               onClick={() => authClient.signIn.social({ provider: "google" })}
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -191,30 +182,35 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header user={session.user} onSignOut={handleSignOut} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Welcome back, {session.user.name?.split(" ")[0] || "Student"}!
-            </h1>
-            <p className="text-blue-100 text-lg">
-              Manage your courses and stay up-to-date with assignments
-            </p>
-          </div>
+          <Card className="border-border bg-card">
+            <CardHeader className="text-center">
+              <Badge variant="outline" className="mb-4 w-fit mx-auto">
+                Dashboard
+              </Badge>
+              <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">
+                Welcome back, {session.user.name?.split(" ")[0] || "Student"}!
+              </CardTitle>
+              <CardDescription className="text-muted-foreground text-lg">
+                Manage your courses and stay up-to-date with assignments
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
 
         {/* Loading State */}
         {coursesLoading && (
           <div>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Your Courses
               </h2>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Loading courses from Google Classroom...
               </p>
             </div>
@@ -228,9 +224,11 @@ export default function CoursesPage() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <ErrorEmptyState onRetry={fetchCourses} />
-          </div>
+          <Card className="border-border bg-card">
+            <CardContent className="p-8">
+              <ErrorEmptyState onRetry={fetchCourses} />
+            </CardContent>
+          </Card>
         )}
 
         {/* Courses Grid */}
@@ -240,10 +238,10 @@ export default function CoursesPage() {
               <>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold text-foreground">
                       Your Courses
                     </h2>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-muted-foreground mt-1">
                       {courses.length} course{courses.length !== 1 ? "s" : ""}{" "}
                       found
                     </p>
@@ -253,20 +251,9 @@ export default function CoursesPage() {
                     variant="outline"
                     size="sm"
                     disabled={coursesLoading}
+                    className="border-border text-foreground hover:bg-accent"
                   >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
+                    <RefreshCwIcon className="w-4 h-4 mr-2" />
                     Refresh
                   </Button>
                 </div>
@@ -278,9 +265,11 @@ export default function CoursesPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-8">
-                <NoCoursesEmptyState onGetCourses={fetchCourses} />
-              </div>
+              <Card className="border-border bg-card">
+                <CardContent className="p-8">
+                  <NoCoursesEmptyState onGetCourses={fetchCourses} />
+                </CardContent>
+              </Card>
             )}
           </div>
         )}

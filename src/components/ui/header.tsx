@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface User {
   id: string;
@@ -17,26 +18,66 @@ interface HeaderProps {
 
 export function Header({ user, onSignOut }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [session, setSession] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const getSession = async () => {
+      try {
+        const sessionData = await authClient.getSession();
+        if (sessionData?.data) {
+          setSession(sessionData.data.user);
+        }
+      } catch (error) {
+        console.error("Error getting session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getSession();
+  }, []);
 
   const handleSignOut = async () => {
     try {
       await authClient.signOut();
+      setSession(null);
       if (onSignOut) onSignOut();
     } catch (error) {
       console.error("Sign out error:", error);
     }
   };
 
+  const currentUser = user || session;
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-5 h-5 text-primary-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -49,101 +90,111 @@ export function Header({ user, onSignOut }: HeaderProps) {
                   />
                 </svg>
               </div>
-              <span className="text-xl font-semibold text-gray-900">
-                Classroom
+              <span className="text-xl font-semibold text-foreground">
+                ClassGo
               </span>
             </Link>
           </div>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/courses"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              Courses
-            </Link>
-            <Link
-              href="/assignments"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              Assignments
-            </Link>
-            <Link
-              href="/calendar"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              Calendar
-            </Link>
+            {currentUser && (
+              <>
+                <Link
+                  href="/courses"
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+                >
+                  Courses
+                </Link>
+                <Link
+                  href="/assignments"
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+                >
+                  Assignments
+                </Link>
+                <Link
+                  href="/calendar"
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+                >
+                  Calendar
+                </Link>
+              </>
+            )}
           </nav>
 
-          {/* User Menu */}
+          {/* User Menu and Theme Toggle */}
           <div className="flex items-center space-x-4">
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">
-                      {user.name
-                        ? user.name.charAt(0).toUpperCase()
-                        : user.email.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="hidden sm:block text-gray-700 font-medium">
-                    {user.name || user.email}
-                  </span>
-                  <svg
-                    className="w-4 h-4 text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-
-                {/* Dropdown Menu */}
-                {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user.name || "User"}
-                      </p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                    </div>
+            <ThemeToggle />
+            
+            {!loading && (
+              <>
+                {currentUser ? (
+                  <div className="relative" ref={dropdownRef}>
                     <button
-                      onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors"
                     >
-                      Sign Out
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <span className="text-primary-foreground font-medium text-sm">
+                          {currentUser.name
+                            ? currentUser.name.charAt(0).toUpperCase()
+                            : currentUser.email.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="hidden sm:block text-foreground font-medium">
+                        {currentUser.name || currentUser.email}
+                      </span>
+                      <svg
+                        className="w-4 h-4 text-muted-foreground"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
                     </button>
+
+                    {/* Dropdown Menu */}
+                    {isMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-64 bg-popover rounded-lg shadow-2xl border border-border py-1 z-50 min-w-max transform -translate-x-4">
+                        <div className="px-4 py-3 border-b border-border">
+                          <p className="text-sm font-medium text-popover-foreground truncate">
+                            {currentUser.name || "User"}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">{currentUser.email}</p>
+                        </div>
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full text-left px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <Link
+                    href="/sign-in"
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    Sign In
+                  </Link>
                 )}
-              </div>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Sign In
-              </Link>
+              </>
             )}
 
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
             >
               <svg
-                className="w-6 h-6 text-gray-700"
+                className="w-6 h-6 text-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -161,26 +212,30 @@ export function Header({ user, onSignOut }: HeaderProps) {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-border py-4">
             <nav className="flex flex-col space-y-3">
-              <Link
-                href="/courses"
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-2 py-1"
-              >
-                Courses
-              </Link>
-              <Link
-                href="/assignments"
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-2 py-1"
-              >
-                Assignments
-              </Link>
-              <Link
-                href="/calendar"
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-2 py-1"
-              >
-                Calendar
-              </Link>
+              {currentUser && (
+                <>
+                  <Link
+                    href="/courses"
+                    className="text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-1"
+                  >
+                    Courses
+                  </Link>
+                  <Link
+                    href="/assignments"
+                    className="text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-1"
+                  >
+                    Assignments
+                  </Link>
+                  <Link
+                    href="/calendar"
+                    className="text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-1"
+                  >
+                    Calendar
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}

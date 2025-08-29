@@ -51,7 +51,9 @@ export function AssignmentFilters({
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <div className="relative group">
+      <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="relative bg-card/80 backdrop-blur-xl rounded-lg border border-border/50 p-4 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Left side - Filters and Sort */}
         <div className="flex items-center gap-3">
@@ -92,7 +94,7 @@ export function AssignmentFilters({
             </Button>
 
             {isFilterOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+              <div className="absolute top-full left-0 mt-1 w-48 bg-popover rounded-lg shadow-lg border border-border py-1 z-10">
                 {filterOptions.map((option) => (
                   <button
                     key={option.value}
@@ -150,7 +152,7 @@ export function AssignmentFilters({
             </Button>
 
             {isSortOpen && (
-              <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+              <div className="absolute top-full left-0 mt-1 w-40 bg-popover rounded-lg shadow-lg border border-border py-1 z-10">
                 {sortOptions.map((option) => (
                   <button
                     key={option.value}
@@ -227,17 +229,18 @@ export function AssignmentFilters({
           </button>
         </div>
       </div>
-
-      {/* Click outside to close dropdowns */}
-      {(isFilterOpen || isSortOpen) && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => {
-            setIsFilterOpen(false);
-            setIsSortOpen(false);
-          }}
-        />
-      )}
     </div>
+
+    {/* Click outside to close dropdowns */}
+    {(isFilterOpen || isSortOpen) && (
+      <div
+        className="fixed inset-0 z-0"
+        onClick={() => {
+          setIsFilterOpen(false);
+          setIsSortOpen(false);
+        }}
+      />
+    )}
+  </div>
   );
 }
