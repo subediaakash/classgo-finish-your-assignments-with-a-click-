@@ -110,6 +110,10 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
     const [loading, setLoading] = useState(true);
     const [dataLoading, setDataLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [submissionText, setSubmissionText] = useState("");
+    const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
     console.log("Component rendered with courseId:", courseId, "assignmentId:", assignmentId);
 
@@ -327,6 +331,52 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
         );
     }
 
+    // Check if current user has already submitted
+    const currentUserSubmission = assignmentData?.submissions.find(
+        submission => submission.userId === session?.user.id
+    );
+
+    const handleFileSubmission = async () => {
+        if (!selectedFile && !submissionText.trim()) {
+            alert("Please select a file or enter submission text");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const formData = new FormData();
+            if (selectedFile) {
+                formData.append("file", selectedFile);
+            }
+            formData.append("submissionText", submissionText);
+            formData.append("courseId", courseId);
+            formData.append("assignmentId", assignmentId);
+
+            const response = await fetch(`/api/classroom/${courseId}/assignments/${assignmentId}/submit`, {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Assignment submitted successfully!");
+                setShowSubmissionForm(false);
+                setSelectedFile(null);
+                setSubmissionText("");
+                // Refresh the assignment data to show the new submission
+                window.location.reload();
+            } else {
+                alert(`Failed to submit assignment: ${result.error}`);
+            }
+        } catch (error) {
+            console.error("Error submitting assignment:", error);
+            alert("Failed to submit assignment. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -399,8 +449,126 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Submit Assignment Button */}
+                                {!currentUserSubmission && (
+                                    <div className="mt-4 lg:mt-0 lg:ml-6">
+                                        <button
+                                            onClick={() => setShowSubmissionForm(!showSubmissionForm)}
+                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            Submit Assignment
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
+
+                        {/* Submission Form */}
+                        {showSubmissionForm && !currentUserSubmission && (
+                            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Submit Your Assignment</h3>
+                                
+                                <div className="space-y-4">
+                                    {/* File Upload */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Upload File (Optional)
+                                        </label>
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                            <input
+                                                type="file"
+                                                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.ppt,.pptx"
+                                            />
+                                            {selectedFile && (
+                                                <div className="mt-2 text-sm text-green-600">
+                                                    Selected: {selectedFile.name}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Text Submission */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Submission Text (Optional)
+                                        </label>
+                                        <textarea
+                                            value={submissionText}
+                                            onChange={(e) => setSubmissionText(e.target.value)}
+                                            rows={4}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            placeholder="Enter your submission text or notes..."
+                                        />
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex space-x-3">
+                                        <button
+                                            onClick={handleFileSubmission}
+                                            disabled={isSubmitting || (!selectedFile && !submissionText.trim())}
+                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Submit Assignment
+                                                </>
+                                            )}
+                                        </button>
+                                        
+                                        <button
+                                            onClick={() => {
+                                                setShowSubmissionForm(false);
+                                                setSelectedFile(null);
+                                                setSubmissionText("");
+                                            }}
+                                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Current User's Submission Status */}
+                        {currentUserSubmission && (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                                <div className="flex items-center">
+                                    <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <h3 className="text-sm font-medium text-green-800">
+                                            You have already submitted this assignment
+                                        </h3>
+                                        <p className="text-sm text-green-700 mt-1">
+                                            Status: {currentUserSubmission.state.replace('_', ' ')} • 
+                                            Submitted: {new Date(currentUserSubmission.updateTime).toLocaleDateString()}
+                                            {currentUserSubmission.assignedGrade !== undefined && (
+                                                <> • Grade: {currentUserSubmission.assignedGrade}{assignmentData.assignment.maxPoints ? `/${assignmentData.assignment.maxPoints}` : ''}</>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Statistics Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -521,7 +689,24 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                                 </div>
                             ) : (
                                 <div className="p-6 text-center text-gray-500">
-                                    No submissions found for this assignment.
+                                    <div className="flex flex-col items-center">
+                                        <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <p className="text-lg font-medium text-gray-900 mb-2">No submissions yet</p>
+                                        <p className="text-gray-500 mb-4">Be the first to submit this assignment!</p>
+                                        {!currentUserSubmission && (
+                                            <button
+                                                onClick={() => setShowSubmissionForm(true)}
+                                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                            >
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                </svg>
+                                                Submit Assignment
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
