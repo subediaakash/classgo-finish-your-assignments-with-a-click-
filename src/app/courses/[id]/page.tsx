@@ -256,7 +256,7 @@ export default function CoursePage({ params }: PageProps) {
           <div className="animate-pulse mb-8">
             <div className="h-6 bg-muted rounded w-64 mb-4"></div>
           </div>
-          
+
           {/* Loading skeleton for course header */}
           <Card className="border-border bg-card overflow-hidden mb-8">
             <div className="h-32 bg-black relative">
@@ -320,7 +320,9 @@ export default function CoursePage({ params }: PageProps) {
                   You need to sign in to view course assignments.
                 </p>
                 <Button
-                  onClick={() => authClient.signIn.social({ provider: "google" })}
+                  onClick={() =>
+                    authClient.signIn.social({ provider: "google" })
+                  }
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Sign in with Google
@@ -375,7 +377,7 @@ export default function CoursePage({ params }: PageProps) {
                 <div className="h-9 bg-muted rounded w-20"></div>
               </div>
             </Card>
-            
+
             {/* Loading skeleton for assignments */}
             <div className="space-y-6">
               {Array(5)

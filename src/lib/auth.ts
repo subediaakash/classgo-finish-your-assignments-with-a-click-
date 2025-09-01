@@ -30,6 +30,9 @@ export const auth = betterAuth({
 
         // Guardian links (if needed)
         "https://www.googleapis.com/auth/classroom.guardianlinks.students",
+
+        // Drive (needed to upload and attach files)
+        "https://www.googleapis.com/auth/drive.file",
       ],
     },
   },
