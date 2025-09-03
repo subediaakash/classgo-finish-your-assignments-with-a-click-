@@ -6,6 +6,7 @@ import { FileTextIcon, LoaderIcon } from "lucide-react";
 import { generateAssignmentPDF, AssignmentPDFData } from "@/lib/pdf-utils";
 import type { jsPDF } from "jspdf";
 import ConfettiExplosion from "react-confetti-explosion";
+import axios from "axios";
 
 interface GeneratedAssignmentData {
   success: boolean;
@@ -40,19 +41,13 @@ export function AssignmentPreparer({ assignmentId, courseId, description, onAssi
     setError(null);
 
     try {
-      const response = await fetch(`/api/assignments/${assignmentId}/prepare`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          courseId,
-        }),
+      const response = await axios.post(`/api/assignments/${assignmentId}/prepare`, {
+        courseId,
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(data.error || "Failed to prepare assignment");
       }
 
@@ -65,9 +60,37 @@ export function AssignmentPreparer({ assignmentId, courseId, description, onAssi
 
       const doc = generateAssignmentPDF(pdfData);
       
+      // Save to database immediately after generation
+      try {
+        const saveResponse = await axios.post(`/api/assignments/${assignmentId}/save`, {
+          courseId,
+          assignmentId,
+          assignmentTitle: data.assignmentTitle,
+          assignmentDescription: description,
+          aiResponse: data.aiResponse,
+          studentName: '__________',
+          usn: '__________',
+          subject: '__________',
+          course: '__________',
+          stream: '__________',
+          materialsCount: data.materialsCount,
+        });
+
+        if (saveResponse.status !== 200) {
+          console.error('Failed to save assignment to database');
+        } else {
+          const saveData = saveResponse.data;
+          console.log('Initial assignment saved:', saveData.message);
+        }
+      } catch (error) {
+        console.error('Error saving initial assignment:', error);
+      }
+      
       // Call the callback to pass the generated assignment data
       onAssignmentGenerated({
         ...data,
+        courseId,
+        assignmentId,
         pdfDoc: doc,
         pdfData,
       });
