@@ -3,7 +3,7 @@
 import { Button } from "../ui/button";
 import { authClient } from "@/lib/auth-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRightIcon, BookOpenIcon, SparklesIcon, RocketIcon } from "lucide-react";
+import { ArrowRightIcon, SparklesIcon, RocketIcon } from "lucide-react";
 
 export default function SignUpForm() {
     const handleGoogleSignUp = async () => {
