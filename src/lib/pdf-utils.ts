@@ -122,66 +122,12 @@ export function generateAssignmentPDF(data: AssignmentPDFData): jsPDF {
       
       // Add paragraph spacing (except for the last paragraph)
       if (paragraphIndex < paragraphs.length - 1) {
-        lines.push(''); // Empty line for spacing
+        lines.push('');
       }
     });
     
     return lines;
   };
-  
-  // Function to process markdown bold formatting
-  const processMarkdownBold = (text: string): string => {
-    // Replace **text** with a special marker that we can process later
-    return text.replace(/\*\*(.*?)\*\*/g, 'BOLD_START$1BOLD_END');
-  };
-  
-  // Process the AI response with proper line breaks
-  const maxWidth = 170; // Page width minus margins
-  const lines = splitTextIntoLines(data.aiResponse, maxWidth);
-  
-  // Add lines to PDF with proper spacing and page breaks
-  lines.forEach((line, index) => {
-    // Check if we need a new page
-    if (yPosition > pageHeight) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    
-    // Handle empty lines (paragraph spacing)
-    if (line.trim() === '') {
-      yPosition += lineHeight / 2;
-      return;
-    }
-    
-    // Handle special formatting for headings
-    if (line.startsWith('##')) {
-      // Add extra space before sub-headings
-      yPosition += lineHeight / 2;
-      
-      // Format sub-heading
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
-      doc.text(line.replace('##', '').trim(), leftMargin, yPosition);
-      yPosition += lineHeight + 3; // Space after sub-headings
-      
-      // Reset to normal text
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-    } else if (line.startsWith('#')) {
-      // Handle main headings
-      yPosition += lineHeight / 2;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.text(line.replace('#', '').trim(), leftMargin, yPosition);
-      yPosition += lineHeight + 4; // More space after main headings
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-    } else {
-      // Handle normal text with potential bold formatting
-      renderTextWithBoldFormatting(doc, line, leftMargin, yPosition);
-      yPosition += lineHeight + 2; // Consistent line spacing with extra padding
-    }
-  });
   
   // Function to render text with bold formatting
   const renderTextWithBoldFormatting = (doc: jsPDF, text: string, x: number, y: number) => {
@@ -210,6 +156,51 @@ export function generateAssignmentPDF(data: AssignmentPDFData): jsPDF {
       }
     });
   };
+  
+  // Function to process markdown bold formatting
+  const processMarkdownBold = (text: string): string => {
+    // Replace **text** with a special marker that we can process later
+    return text.replace(/\*\*(.*?)\*\*/g, 'BOLD_START$1BOLD_END');
+  };
+  
+  const maxWidth = 170; // Page width minus margins
+  const lines = splitTextIntoLines(data.aiResponse, maxWidth);
+  
+  lines.forEach((line, _index) => {
+    if (yPosition > pageHeight) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    if (line.trim() === '') {
+      yPosition += lineHeight / 2;
+      return;
+    }
+    
+    if (line.startsWith('##')) {
+      yPosition += lineHeight / 2;
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text(line.replace('##', '').trim(), leftMargin, yPosition);
+      yPosition += lineHeight + 3;
+      
+      // Reset to normal text
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+    } else if (line.startsWith('#')) {
+      yPosition += lineHeight / 2;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text(line.replace('#', '').trim(), leftMargin, yPosition);
+      yPosition += lineHeight + 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+    } else {
+      renderTextWithBoldFormatting(doc, line, leftMargin, yPosition);
+      yPosition += lineHeight + 2;
+    }
+  });
   
   return doc;
 }
