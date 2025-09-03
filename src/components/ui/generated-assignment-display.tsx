@@ -9,6 +9,7 @@ import { downloadPDF, getPDFDataURL, AssignmentPDFData, generateAssignmentPDF } 
 import type { jsPDF } from "jspdf";
 import { Streamdown } from "streamdown";
 import dynamic from "next/dynamic";
+import axios from "axios";
 
 const TipTapEditor = dynamic(() => import("./tiptap-editor").then(mod => ({ default: mod.TipTapEditor })), {
   ssr: false,
@@ -59,6 +60,8 @@ interface GeneratedAssignmentData {
   assignmentTitle: string;
   assignmentDescription?: string;
   materialsCount: number;
+  courseId: string;
+  assignmentId: string;
   pdfDoc: jsPDF;
   pdfData: AssignmentPDFData;
 }
@@ -83,11 +86,45 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
     course: '__________',
     stream: '__________'
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   // Ensure we're on the client side
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Load existing assignment data when component mounts
+  useEffect(() => {
+    const loadExistingAssignment = async () => {
+      try {
+        const response = await axios.get(`/api/assignments/${assignmentData.assignmentId}/save`, {
+          params: { courseId: assignmentData.courseId }
+        });
+
+        if (response.status === 200) {
+          const data = response.data;
+          if (data.success && data.assignment) {
+            // Load existing student info and content
+            setStudentInfo({
+              name: data.assignment.studentName || '__________',
+              usn: data.assignment.usn || '__________',
+              subject: data.assignment.subject || '__________',
+              course: data.assignment.course || '__________',
+              stream: data.assignment.stream || '__________'
+            });
+            setDisplayContent(data.assignment.aiResponse);
+            setEditedContent(markdownToHtml(data.assignment.aiResponse));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading existing assignment:', error);
+      }
+    };
+
+    if (isClient) {
+      loadExistingAssignment();
+    }
+  }, [isClient, assignmentData.assignmentTitle, assignmentData.courseId, assignmentData.assignmentId]);
 
   // Hide confetti after animation completes
   useEffect(() => {
@@ -127,31 +164,63 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
     course: string;
     stream: string;
   }) => {
-    setEditedContent(content);
-    setStudentInfo(newStudentInfo);
+    setIsSaving(true);
     
-    // Convert HTML back to markdown for PDF generation
-    const markdownContent = htmlToMarkdown(content);
-    
-    // Generate new PDF with edited content and student info
-    const pdfData: AssignmentPDFData = {
-      title: assignmentData.assignmentTitle,
-      description: assignmentData.assignmentDescription,
-      aiResponse: markdownContent,
-      studentName: newStudentInfo.name,
-      usn: newStudentInfo.usn,
-      subject: newStudentInfo.subject,
-      course: newStudentInfo.course,
-      stream: newStudentInfo.stream,
-    };
-    
-    const newPdfDoc = generateAssignmentPDF(pdfData);
-    setCurrentPdfDoc(newPdfDoc);
-    
-    // Update the assignment data and display content
-    assignmentData.aiResponse = markdownContent;
-    assignmentData.pdfDoc = newPdfDoc;
-    setDisplayContent(markdownContent);
+    try {
+      setEditedContent(content);
+      setStudentInfo(newStudentInfo);
+      
+      // Convert HTML back to markdown for PDF generation
+      const markdownContent = htmlToMarkdown(content);
+      
+      // Generate new PDF with edited content and student info
+      const pdfData: AssignmentPDFData = {
+        title: assignmentData.assignmentTitle,
+        description: assignmentData.assignmentDescription,
+        aiResponse: markdownContent,
+        studentName: newStudentInfo.name,
+        usn: newStudentInfo.usn,
+        subject: newStudentInfo.subject,
+        course: newStudentInfo.course,
+        stream: newStudentInfo.stream,
+      };
+      
+      const newPdfDoc = generateAssignmentPDF(pdfData);
+      setCurrentPdfDoc(newPdfDoc);
+      
+      // Update the assignment data and display content
+      assignmentData.aiResponse = markdownContent;
+      assignmentData.pdfDoc = newPdfDoc;
+      setDisplayContent(markdownContent);
+      
+      // Save to database
+      const saveResponse = await axios.post(`/api/assignments/${assignmentData.assignmentId}/save`, {
+        courseId: assignmentData.courseId,
+        assignmentId: assignmentData.assignmentId,
+        assignmentTitle: assignmentData.assignmentTitle,
+        assignmentDescription: assignmentData.assignmentDescription,
+        aiResponse: markdownContent,
+        studentName: newStudentInfo.name,
+        usn: newStudentInfo.usn,
+        subject: newStudentInfo.subject,
+        course: newStudentInfo.course,
+        stream: newStudentInfo.stream,
+        materialsCount: assignmentData.materialsCount,
+      });
+
+      if (saveResponse.status !== 200) {
+        throw new Error('Failed to save assignment to database');
+      }
+
+      const saveData = saveResponse.data;
+      console.log('Assignment saved:', saveData.message);
+      
+    } catch (error) {
+      console.error('Error saving assignment:', error);
+      // You could show an error message to the user here
+    } finally {
+      setIsSaving(false);
+    }
     
     // Don't exit edit mode automatically - let user decide when to finish
   };
@@ -249,7 +318,7 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
             <div className="flex items-center gap-2 text-foreground">
               <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
               <CardTitle className="text-xl font-semibold text-foreground">
-                AI-Generated Assignment Response
+                 Assignment Solution
               </CardTitle>
             </div>
             <Badge variant="outline" className="border-border text-foreground">
@@ -309,6 +378,7 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
             <TipTapEditor
               content={editedContent}
               studentInfo={studentInfo}
+              isSaving={isSaving}
               onSave={handleSave}
               onPreview={handlePreviewUpdated}
               onCancelEdit={handleCancelEdit}
