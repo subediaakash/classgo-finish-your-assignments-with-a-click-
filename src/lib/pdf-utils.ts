@@ -26,7 +26,7 @@ export function generateAssignmentPDF(data: AssignmentPDFData): jsPDF {
   // Header section
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('Assignment Response', leftMargin, yPosition);
+  doc.text('Assignment', leftMargin, yPosition);
   
   yPosition += lineHeight + 8; // More space after header
   
