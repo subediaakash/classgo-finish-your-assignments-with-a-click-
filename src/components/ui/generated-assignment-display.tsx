@@ -76,6 +76,13 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
   const [showConfetti, setShowConfetti] = useState(true); // Show confetti when component first appears
   const [isClient, setIsClient] = useState(false);
   const [displayContent, setDisplayContent] = useState(assignmentData.aiResponse);
+  const [studentInfo, setStudentInfo] = useState({
+    name: '__________',
+    usn: '__________',
+    subject: '__________',
+    course: '__________',
+    stream: '__________'
+  });
 
   // Ensure we're on the client side
   useEffect(() => {
@@ -113,17 +120,29 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
     setDisplayContent(assignmentData.aiResponse);
   };
 
-  const handleSave = async (content: string) => {
+  const handleSave = async (content: string, newStudentInfo: {
+    name: string;
+    usn: string;
+    subject: string;
+    course: string;
+    stream: string;
+  }) => {
     setEditedContent(content);
+    setStudentInfo(newStudentInfo);
     
     // Convert HTML back to markdown for PDF generation
     const markdownContent = htmlToMarkdown(content);
     
-    // Generate new PDF with edited content
+    // Generate new PDF with edited content and student info
     const pdfData: AssignmentPDFData = {
       title: assignmentData.assignmentTitle,
       description: assignmentData.assignmentDescription,
       aiResponse: markdownContent,
+      studentName: newStudentInfo.name,
+      usn: newStudentInfo.usn,
+      subject: newStudentInfo.subject,
+      course: newStudentInfo.course,
+      stream: newStudentInfo.stream,
     };
     
     const newPdfDoc = generateAssignmentPDF(pdfData);
@@ -252,30 +271,6 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Student Information */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-muted/50 rounded-lg border border-border">
-          <div>
-            <div className="text-sm font-medium text-muted-foreground">Name</div>
-            <div className="text-lg font-semibold text-foreground">__________</div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-muted-foreground">USN</div>
-            <div className="text-lg font-semibold text-foreground">__________</div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-muted-foreground">Subject</div>
-            <div className="text-lg font-semibold text-foreground">__________</div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-muted-foreground">Course</div>
-            <div className="text-lg font-semibold text-foreground">__________</div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-muted-foreground">Stream</div>
-            <div className="text-lg font-semibold text-foreground">__________</div>
-          </div>
-        </div>
-
         {/* Assignment Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg border border-border">
           <div>
@@ -313,15 +308,43 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
           {isEditing ? (
             <TipTapEditor
               content={editedContent}
+              studentInfo={studentInfo}
               onSave={handleSave}
               onPreview={handlePreviewUpdated}
               onCancelEdit={handleCancelEdit}
             />
           ) : (
-            <div className="bg-muted/50 rounded-lg border border-border p-6">
-              <Streamdown className="prose prose-gray max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-code:text-foreground prose-pre:text-foreground prose-blockquote:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
-                {displayContent}
-              </Streamdown>
+            <div className="bg-muted/50 rounded-lg border border-border p-6 space-y-6">
+              {/* Student Information */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Name</div>
+                  <div className="text-lg font-semibold text-foreground">{studentInfo.name}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">USN</div>
+                  <div className="text-lg font-semibold text-foreground">{studentInfo.usn}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Subject</div>
+                  <div className="text-lg font-semibold text-foreground">{studentInfo.subject}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Course</div>
+                  <div className="text-lg font-semibold text-foreground">{studentInfo.course}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Stream</div>
+                  <div className="text-lg font-semibold text-foreground">{studentInfo.stream}</div>
+                </div>
+              </div>
+              
+              {/* Generated Content */}
+              <div>
+                <Streamdown className="prose prose-gray max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-code:text-foreground prose-pre:text-foreground prose-blockquote:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
+                  {displayContent}
+                </Streamdown>
+              </div>
             </div>
           )}
         </div>

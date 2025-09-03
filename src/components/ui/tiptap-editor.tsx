@@ -10,13 +10,27 @@ import { BoldIcon, ItalicIcon, Heading1Icon, Heading2Icon, SaveIcon, EyeIcon } f
 
 interface TipTapEditorProps {
   content: string;
-  onSave: (content: string) => void;
+  studentInfo: {
+    name: string;
+    usn: string;
+    subject: string;
+    course: string;
+    stream: string;
+  };
+  onSave: (content: string, studentInfo: {
+    name: string;
+    usn: string;
+    subject: string;
+    course: string;
+    stream: string;
+  }) => void;
   onPreview: () => void;
   onCancelEdit: () => void;
 }
 
-export function TipTapEditor({ content, onSave, onPreview, onCancelEdit }: TipTapEditorProps) {
+export function TipTapEditor({ content, studentInfo, onSave, onPreview, onCancelEdit }: TipTapEditorProps) {
   const [isClient, setIsClient] = useState(false);
+  const [localStudentInfo, setLocalStudentInfo] = useState(studentInfo);
 
   // Ensure we're on the client side
   useEffect(() => {
@@ -95,21 +109,16 @@ export function TipTapEditor({ content, onSave, onPreview, onCancelEdit }: TipTa
           <CardTitle className="text-lg font-semibold text-foreground">Edit Response</CardTitle>
           <div className="flex gap-2">
             <Button
-              onClick={() => onSave(editor.getHTML())}
+              onClick={() => {
+                onSave(editor.getHTML(), localStudentInfo);
+                // Close edit mode after saving
+                onCancelEdit();
+              }}
               size="sm"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <SaveIcon className="w-4 h-4 mr-2" />
               Save
-            </Button>
-            <Button
-              onClick={onPreview}
-              variant="outline"
-              size="sm"
-              className="border-border text-foreground hover:bg-accent"
-            >
-              <EyeIcon className="w-4 h-4 mr-2" />
-              Preview PDF
             </Button>
             <Button
               onClick={onCancelEdit}
@@ -124,6 +133,63 @@ export function TipTapEditor({ content, onSave, onPreview, onCancelEdit }: TipTa
       </CardHeader>
       
       <CardContent>
+        {/* Student Information Input Fields */}
+        <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
+          <h4 className="text-sm font-medium text-foreground mb-3">Student Information</h4>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Name</label>
+              <input
+                type="text"
+                value={localStudentInfo.name}
+                onChange={(e) => setLocalStudentInfo(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Enter your name"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">USN</label>
+              <input
+                type="text"
+                value={localStudentInfo.usn}
+                onChange={(e) => setLocalStudentInfo(prev => ({ ...prev, usn: e.target.value }))}
+                className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Enter USN"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Subject</label>
+              <input
+                type="text"
+                value={localStudentInfo.subject}
+                onChange={(e) => setLocalStudentInfo(prev => ({ ...prev, subject: e.target.value }))}
+                className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Enter subject"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Course</label>
+              <input
+                type="text"
+                value={localStudentInfo.course}
+                onChange={(e) => setLocalStudentInfo(prev => ({ ...prev, course: e.target.value }))}
+                className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Enter course"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Stream</label>
+              <input
+                type="text"
+                value={localStudentInfo.stream}
+                onChange={(e) => setLocalStudentInfo(prev => ({ ...prev, stream: e.target.value }))}
+                className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Enter stream"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Toolbar */}
         <div className="flex flex-wrap gap-2 mb-4 p-3 bg-muted/50 rounded-lg border border-border">
           <Button
