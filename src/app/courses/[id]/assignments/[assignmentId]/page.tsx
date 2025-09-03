@@ -17,6 +17,7 @@ import Link from "next/link";
 import type { jsPDF } from "jspdf";
 import type { AssignmentPDFData } from "@/lib/pdf-utils";
 import dynamic from "next/dynamic";
+import axios from "axios";
 
 const AssignmentPreparer = dynamic(() => import("@/components/ui/assignment-preparer").then(mod => ({ default: mod.AssignmentPreparer })), {
   ssr: false,
@@ -171,6 +172,23 @@ interface PageProps {
   params: Promise<{ id: string; assignmentId: string }>;
 }
 
+// Add proper TypeScript interfaces for API responses
+// Use the existing AssignmentData interface instead of creating a new one
+type AssignmentResponse = AssignmentData;
+
+interface GeneratedAssignmentResponse {
+  success: boolean;
+  assignment: {
+    aiResponse: string;
+    assignmentTitle: string;
+    assignmentDescription?: string;
+    materialsCount: number;
+    courseId: string;
+    assignmentId: string;
+  };
+  error?: string;
+}
+
 export default function AssignmentDetailsPage({ params }: PageProps) {
   const { id: courseId, assignmentId } = use(params);
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(
@@ -188,7 +206,7 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
     materialsCount: number;
     courseId: string;
     assignmentId: string;
-    pdfDoc: jsPDF;
+    pdfDoc: jsPDF | null;
     pdfData: AssignmentPDFData;
   } | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -231,22 +249,16 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
 
       setDataLoading(true);
       try {
-        const res = await fetch(
-          `/api/classroom/${courseId}/assignments/${assignmentId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+        const response = await axios.get<AssignmentResponse>(
+          `/api/classroom/${courseId}/assignments/${assignmentId}`
         );
 
-        const data = await res.json();
+        const data = response.data;
 
-        if (!res.ok) {
+        if (response.status !== 200) {
           console.error("Error fetching assignment data:", data);
           setError(
-            `Failed to fetch assignment data: ${data.error || "Unknown error"}`
+            `Failed to fetch assignment data: Unknown error`
           );
           return;
         }
@@ -255,16 +267,67 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
         console.log("Setting assignment data...");
         setAssignmentData(data);
         setError(null);
-      } catch (error) {
-        console.error("Error:", error);
-        setError("Failed to fetch assignment data. Please try again.");
-      } finally {
+              } catch (error) {
+          if (axios.isAxiosError(error)) {
+            console.error("Axios error:", error.response?.data);
+            setError("Failed to fetch assignment data. Please try again.");
+          } else {
+            console.error("Unexpected error:", error);
+            setError("An unexpected error occurred. Please try again.");
+          }
+        } finally {
         setDataLoading(false);
       }
     }
 
     fetchAssignmentData();
   }, [courseId, assignmentId, session]);
+
+  // Load previously generated assignment from database
+  useEffect(() => {
+    async function loadExistingGeneratedAssignment() {
+      if (!session || !courseId || !assignmentId) return;
+
+      try {
+        const response = await axios.get<GeneratedAssignmentResponse>(
+          `/api/assignments/${assignmentId}/save`,
+          {
+            params: { courseId }
+          }
+        );
+
+        if (response.status === 200) {
+          const data = response.data;
+          if (data.success && data.assignment) {
+            const assignment = data.assignment;
+            setGeneratedAssignment({
+              success: true,
+              aiResponse: assignment.aiResponse,
+              assignmentTitle: assignment.assignmentTitle,
+              assignmentDescription: assignment.assignmentDescription,
+              materialsCount: assignment.materialsCount,
+              courseId: assignment.courseId,
+              assignmentId: assignment.assignmentId,
+              pdfDoc: null, // Will be regenerated when needed
+              pdfData: {
+                title: assignment.assignmentTitle,
+                description: assignment.assignmentDescription,
+                aiResponse: assignment.aiResponse,
+              },
+            });
+          }
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error("Axios error loading existing assignment:", error.response?.data);
+        } else {
+          console.error("Error loading existing generated assignment:", error);
+        }
+      }
+    }
+
+    loadExistingGeneratedAssignment();
+  }, [session, courseId, assignmentId]);
 
   const getStateColor = (state: string) => {
     switch (state) {

@@ -62,7 +62,7 @@ interface GeneratedAssignmentData {
   materialsCount: number;
   courseId: string;
   assignmentId: string;
-  pdfDoc: jsPDF;
+  pdfDoc: jsPDF | null;
   pdfData: AssignmentPDFData;
 }
 
@@ -75,7 +75,7 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
   const [showPreview, setShowPreview] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(markdownToHtml(assignmentData.aiResponse));
-  const [currentPdfDoc, setCurrentPdfDoc] = useState<jsPDF>(assignmentData.pdfDoc);
+  const [currentPdfDoc, setCurrentPdfDoc] = useState<jsPDF | null>(assignmentData.pdfDoc);
   const [showConfetti, setShowConfetti] = useState(true); // Show confetti when component first appears
   const [isClient, setIsClient] = useState(false);
   const [displayContent, setDisplayContent] = useState(assignmentData.aiResponse);
@@ -125,6 +125,19 @@ export function GeneratedAssignmentDisplay({ assignmentData, assignmentTitle }: 
       loadExistingAssignment();
     }
   }, [isClient, assignmentData.assignmentTitle, assignmentData.courseId, assignmentData.assignmentId]);
+
+  // Generate PDF if it doesn't exist
+  useEffect(() => {
+    if (assignmentData.pdfDoc === null && assignmentData.aiResponse) {
+      const pdfData: AssignmentPDFData = {
+        title: assignmentData.assignmentTitle,
+        description: assignmentData.assignmentDescription,
+        aiResponse: assignmentData.aiResponse,
+      };
+      const doc = generateAssignmentPDF(pdfData);
+      setCurrentPdfDoc(doc);
+    }
+  }, [assignmentData.pdfDoc, assignmentData.aiResponse, assignmentData.assignmentTitle, assignmentData.assignmentDescription]);
 
   // Hide confetti after animation completes
   useEffect(() => {
