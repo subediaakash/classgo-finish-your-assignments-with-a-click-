@@ -7,7 +7,12 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, CalendarIcon, FileTextIcon, ExternalLinkIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CalendarIcon,
+  FileTextIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
 import Link from "next/link";
 
 interface Session {
@@ -33,6 +38,36 @@ interface Assignment {
   dueTime?: {
     hours: number;
     minutes: number;
+  };
+  materials?: Material[];
+}
+
+interface Material {
+  driveFile?: {
+    driveFile?: {
+      id: string;
+      title: string;
+      alternateLink: string;
+      thumbnailUrl?: string;
+    };
+    shareMode?: string;
+  };
+  youTubeVideo?: {
+    id: string;
+    title: string;
+    alternateLink: string;
+    thumbnailUrl?: string;
+  };
+  link?: {
+    url: string;
+    title?: string;
+    thumbnailUrl?: string;
+  };
+  form?: {
+    formUrl: string;
+    responseUrl: string;
+    title: string;
+    thumbnailUrl?: string;
   };
 }
 
@@ -245,7 +280,9 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                   >
                     {attachment.driveFile.title}
                   </a>
-                  <div className="text-xs text-muted-foreground">Google Drive File</div>
+                  <div className="text-xs text-muted-foreground">
+                    Google Drive File
+                  </div>
                 </div>
                 {attachment.driveFile.thumbnailUrl && (
                   <Image
@@ -280,7 +317,9 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                   >
                     {attachment.youTubeVideo.title}
                   </a>
-                  <div className="text-xs text-muted-foreground">YouTube Video</div>
+                  <div className="text-xs text-muted-foreground">
+                    YouTube Video
+                  </div>
                 </div>
                 {attachment.youTubeVideo.thumbnailUrl && (
                   <Image
@@ -350,7 +389,160 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                   >
                     {attachment.form.title}
                   </a>
-                  <div className="text-xs text-muted-foreground">Form Response</div>
+                  <div className="text-xs text-muted-foreground">
+                    Form Response
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderAssignmentMaterials = (materials?: Material[]) => {
+    if (!materials || materials.length === 0) return null;
+
+    return (
+      <div className="space-y-2">
+        {materials.map((material, index) => (
+          <div
+            key={index}
+            className="flex items-center space-x-2 p-2 bg-muted/50 rounded-lg border border-border"
+          >
+            {material.driveFile?.driveFile && (
+              <>
+                <svg
+                  className="w-4 h-4 text-blue-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <a
+                    href={material.driveFile.driveFile.alternateLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    {material.driveFile.driveFile.title}
+                  </a>
+                  <div className="text-xs text-muted-foreground">
+                    Google Drive File
+                  </div>
+                </div>
+                {material.driveFile.driveFile.thumbnailUrl && (
+                  <Image
+                    src={material.driveFile.driveFile.thumbnailUrl}
+                    alt="File thumbnail"
+                    width={24}
+                    height={24}
+                    className="rounded"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
+              </>
+            )}
+
+            {material.youTubeVideo && (
+              <>
+                <svg
+                  className="w-4 h-4 text-red-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm3.5 8.5l-5 3V7.5l5 3z" />
+                </svg>
+                <div className="flex-1">
+                  <a
+                    href={material.youTubeVideo.alternateLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    {material.youTubeVideo.title}
+                  </a>
+                  <div className="text-xs text-muted-foreground">
+                    YouTube Video
+                  </div>
+                </div>
+                {material.youTubeVideo.thumbnailUrl && (
+                  <Image
+                    src={material.youTubeVideo.thumbnailUrl}
+                    alt="Video thumbnail"
+                    width={24}
+                    height={24}
+                    className="rounded"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
+              </>
+            )}
+
+            {material.link && (
+              <>
+                <svg
+                  className="w-4 h-4 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <a
+                    href={material.link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                  >
+                    {material.link.title || material.link.url}
+                  </a>
+                  <div className="text-xs text-muted-foreground">Web Link</div>
+                </div>
+              </>
+            )}
+
+            {material.form && (
+              <>
+                <svg
+                  className="w-4 h-4 text-purple-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <a
+                    href={material.form.formUrl || material.form.responseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
+                  >
+                    {material.form.title}
+                  </a>
+                  <div className="text-xs text-muted-foreground">Form</div>
                 </div>
               </>
             )}
@@ -381,7 +573,9 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
           <Card className="border-border bg-card max-w-md">
             <CardContent className="p-8 text-center">
-              <p className="mb-4 text-foreground">Please sign in to view assignment details</p>
+              <p className="mb-4 text-foreground">
+                Please sign in to view assignment details
+              </p>
               <Button
                 onClick={() => authClient.signIn.social({ provider: "google" })}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -406,14 +600,32 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation */}
         <div className="flex items-center gap-3 mb-6">
-          <Button asChild variant="outline" size="sm" className="border-border text-foreground hover:bg-accent">
-            <Link href={`/courses/${courseId}`} className="flex items-center gap-2" prefetch>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="border-border text-foreground hover:bg-accent"
+          >
+            <Link
+              href={`/courses/${courseId}`}
+              className="flex items-center gap-2"
+              prefetch
+            >
               <ArrowLeftIcon className="w-4 h-4" />
               Back to Course
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="border-border text-foreground hover:bg-accent">
-            <Link href="/assignments" className="flex items-center gap-2" prefetch>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="border-border text-foreground hover:bg-accent"
+          >
+            <Link
+              href="/assignments"
+              className="flex items-center gap-2"
+              prefetch
+            >
               View All Assignments
             </Link>
           </Button>
@@ -470,11 +682,17 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                       {assignmentData.assignment.title}
                     </CardTitle>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="outline" className="border-border text-foreground">
+                      <Badge
+                        variant="outline"
+                        className="border-border text-foreground"
+                      >
                         {assignmentData.assignment.state}
                       </Badge>
                       {assignmentData.assignment.maxPoints && (
-                        <Badge variant="outline" className="border-border text-foreground">
+                        <Badge
+                          variant="outline"
+                          className="border-border text-foreground"
+                        >
                           {assignmentData.assignment.maxPoints} points
                         </Badge>
                       )}
@@ -500,9 +718,9 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                           ).toLocaleDateString()}
                           {assignmentData.assignment.dueTime &&
                             assignmentData.assignment.dueTime.hours !==
-                            undefined &&
+                              undefined &&
                             assignmentData.assignment.dueTime.minutes !==
-                            undefined && (
+                              undefined && (
                               <span className="ml-2">
                                 at{" "}
                                 {assignmentData.assignment.dueTime.hours
@@ -517,6 +735,18 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                         </span>
                       </div>
                     )}
+
+                    {assignmentData.assignment.materials &&
+                      assignmentData.assignment.materials.length > 0 && (
+                        <div className="mt-4">
+                          <div className="text-sm font-medium text-muted-foreground mb-2">
+                            Materials
+                          </div>
+                          {renderAssignmentMaterials(
+                            assignmentData.assignment.materials
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
               </CardHeader>
@@ -545,8 +775,8 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                         You have already submitted this assignment
                       </h3>
                       <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                        Status: {currentUserSubmission.state.replace("_", " ")} •
-                        Submitted:{" "}
+                        Status: {currentUserSubmission.state.replace("_", " ")}{" "}
+                        • Submitted:{" "}
                         {new Date(
                           currentUserSubmission.updateTime
                         ).toLocaleDateString()}
@@ -573,7 +803,9 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {assignmentData.statistics.totalSubmissions}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Submissions</div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Submissions
+                  </div>
                 </CardContent>
               </Card>
               <Card className="border-border bg-card">
@@ -622,7 +854,10 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     {assignmentData.submissions.map((submission) => (
-                      <Card key={submission.id} className="border-border bg-card hover:shadow-md transition-shadow">
+                      <Card
+                        key={submission.id}
+                        className="border-border bg-card hover:shadow-md transition-shadow"
+                      >
                         <CardContent className="p-6">
                           {/* Student Info Header */}
                           <div className="flex items-center justify-between mb-4">
@@ -651,13 +886,13 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                             </div>
 
                             <div className="flex items-center space-x-2">
-                              <Badge className={getStateColor(submission.state)}>
+                              <Badge
+                                className={getStateColor(submission.state)}
+                              >
                                 {submission.state.replace("_", " ")}
                               </Badge>
                               {submission.late && (
-                                <Badge variant="destructive">
-                                  LATE
-                                </Badge>
+                                <Badge variant="destructive">LATE</Badge>
                               )}
                             </div>
                           </div>
@@ -734,7 +969,8 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                       No submissions yet
                     </p>
                     <p className="text-muted-foreground">
-                      View this assignment in Google Classroom to submit your work.
+                      View this assignment in Google Classroom to submit your
+                      work.
                     </p>
                   </div>
                 </CardContent>
@@ -744,7 +980,9 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
         ) : (
           <Card className="border-border bg-card">
             <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">Failed to load assignment details.</p>
+              <p className="text-muted-foreground">
+                Failed to load assignment details.
+              </p>
             </CardContent>
           </Card>
         )}
