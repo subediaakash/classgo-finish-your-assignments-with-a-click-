@@ -19,6 +19,7 @@ GOOGLE_CLIENT_ID=your_google_oauth_client_id
 GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
 DATABASE_URL=postgresql://user:pass@host:5432/db
 NEXTAUTH_URL=http://localhost:3000
+GOOGLE_AI_API_KEY=your_google_ai_api_key_here
 ```
 
 ## Google OAuth setup
@@ -74,6 +75,12 @@ After adding a new scope (e.g., Drive), sign out and sign back in to grant conse
 
 - `GET /assignments` lists assignments aggregated across enrolled courses.
 - `GET /courses/:courseId/assignments/:assignmentId` shows details, submissions, and allows submitting/turn-in when applicable.
+- **Prepare Assignment Feature**: AI-powered assignment preparation using Google Gemini that:
+  - Fetches assignment details and attachments from Google Classroom
+  - Generates comprehensive responses based on assignment requirements
+  - Creates professionally formatted PDF documents
+  - Displays generated content with beautiful markdown rendering using Streamdown
+  - Provides PDF preview and download functionality
 
 ## Dev Notes
 

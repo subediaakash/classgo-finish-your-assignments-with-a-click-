@@ -322,7 +322,7 @@ export default function AssignmentsPage() {
                 courseName={assignment.courseName}
               />
             ))}
-          </div>
+            </div>
         )}
 
         {/* Empty State */}

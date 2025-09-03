@@ -14,6 +14,10 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { AssignmentPreparer } from "@/components/ui/assignment-preparer";
+import { GeneratedAssignmentDisplay } from "@/components/ui/generated-assignment-display";
+import type { jsPDF } from "jspdf";
+import type { AssignmentPDFData } from "@/lib/pdf-utils";
 
 interface Session {
   user: {
@@ -153,6 +157,15 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generatedAssignment, setGeneratedAssignment] = useState<{
+    success: boolean;
+    aiResponse: string;
+    assignmentTitle: string;
+    assignmentDescription?: string;
+    materialsCount: number;
+    pdfDoc: jsPDF;
+    pdfData: AssignmentPDFData;
+  } | null>(null);
 
   console.log(
     "Component rendered with courseId:",
@@ -676,7 +689,7 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
             {/* Assignment Header */}
             <Card className="border-border bg-card mb-6">
               <CardHeader>
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
                   <div className="flex-1">
                     <CardTitle className="text-3xl font-bold text-foreground mb-2">
                       {assignmentData.assignment.title}
@@ -747,6 +760,16 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                           )}
                         </div>
                       )}
+                  </div>
+                  
+                  {/* Prepare Assignment Section */}
+                  <div className="lg:w-80 flex-shrink-0">
+                    <AssignmentPreparer
+                      assignmentId={assignmentId}
+                      courseId={courseId}
+                      description={assignmentData.assignment.description}
+                      onAssignmentGenerated={setGeneratedAssignment}
+                    />
                   </div>
                 </div>
               </CardHeader>
@@ -976,6 +999,14 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
                 </CardContent>
               )}
             </Card>
+
+            {/* Generated Assignment Display */}
+            {generatedAssignment && (
+              <GeneratedAssignmentDisplay
+                assignmentData={generatedAssignment}
+                assignmentTitle={assignmentData.assignment.title}
+              />
+            )}
           </div>
         ) : (
           <Card className="border-border bg-card">
