@@ -43,8 +43,8 @@
   --radius-xl: calc(var(--radius) + 4px);
   --animate-appear-zoom: appear-zoom 0.5s ease-out forwards;
   --animate-appear: appear 0.5s ease-out forwards;
-  --color-brand-foreground: var(----brand-foreground);
-  --color-brand: var(----brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand: var(--brand);
 
   @keyframes appear-zoom {
     0% {
@@ -67,26 +67,7 @@
       transform: translateY(0);
     }
   }
-  @keyframes appear-zoom {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-    }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    }
-  }
-  @keyframes appear {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-    }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    }
-  }
+  /* removed duplicate keyframes */
 }
 
 @layer utilities {

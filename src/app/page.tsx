@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { HeroSection } from "@/components/blocks/hero-section";
 import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
@@ -9,61 +10,68 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightIcon, BookOpenIcon, ClockIcon, ZapIcon, UsersIcon, ShieldIcon } from "lucide-react";
 import { Icons } from "@/components/ui/icons";
-
-interface User {
-  id: string;
-  name?: string;
-  email: string;
-}
+import { useAuthContext } from "@/components/auth/auth-provider";
 
 export default function Home() {
-  const [session, setSession] = useState<User | null>(null);
-  const [hasGoogleAccount, setHasGoogleAccount] = useState(false);
-
-  const handleSignOut = () => {
-    setSession(null);
-    setHasGoogleAccount(false);
-  };
-
+  const { user, loading } = useAuthContext();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header user={session || undefined} onSignOut={handleSignOut} />
+      <Header />
       
       <HeroSection
         badge={{
-          text: "New Feature",
-          action: {
+          text: user ? "Welcome Back" : "New Feature",
+          action: user ? {
+            text: "Go to Courses",
+            href: "/courses",
+          } : {
             text: "Automated Grading",
             href: "#features",
           },
         }}
-        title="Transform Your Classroom with ClassGo"
-        description="Streamline your Google Classroom workflow with intelligent automation. Manage assignments, track student progress, and save hours of manual work with our powerful tools designed specifically for educators."
-        actions={
-          session && !hasGoogleAccount
-            ? [
-                {
-                  text: "Connect Google Classroom",
-                  href: "/test",
-                  icon: <ArrowRightIcon className="w-4 h-4" />,
-                  variant: "default" as const
-                }
-              ]
-            : [
-                {
-                  text: "Get Started",
-                  href: session ? "/courses" : "/sign-in",
-                  variant: "default" as const
-                },
-                {
-                  text: "GitHub",
-                  href: "https://github.com/your-repo",
-                  variant: "default" as const,
-                  icon: <Icons.gitHub className="h-5 w-5" />
-                }
-              ]
+        title={user ? `Welcome back, ${user.name}!` : "Transform Your Classroom with ClassGo"}
+        description={user 
+          ? "Ready to continue managing your classroom? Access your courses and assignments, or explore new features."
+          : "Streamline your Google Classroom workflow with intelligent automation. Manage assignments, track student progress, and save hours of manual work with our powerful tools designed specifically for educators."
         }
+        actions={user ? [
+          {
+            text: "Go to Courses",
+            href: "/courses",
+            variant: "default" as const
+          },
+          {
+            text: "View Assignments",
+            href: "/assignments",
+            variant: "default" as const
+          }
+        ] : [
+          {
+            text: "Get Started",
+            href: "/sign-in",
+            variant: "default" as const
+          },
+          {
+            text: "GitHub",
+            href: "https://github.com/your-repo",
+            variant: "default" as const,
+            icon: <Icons.gitHub className="h-5 w-5" />
+          }
+        ]}
         image={{
           light: "https://www.launchuicomponents.com/app-light.png",
           dark: "https://www.launchuicomponents.com/app-dark.png",
@@ -166,17 +174,20 @@ export default function Home() {
       <section className="py-24 px-4 bg-muted/50">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to transform your classroom?
+            {user ? "Ready to continue managing your classroom?" : "Ready to transform your classroom?"}
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of educators who are already saving time and improving student outcomes with ClassGo.
+            {user 
+              ? "Access your courses, manage assignments, and explore new features to enhance your teaching experience."
+              : "Join thousands of educators who are already saving time and improving student outcomes with ClassGo."
+            }
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {session && !hasGoogleAccount ? (
+            {user ? (
               <Button size="lg" asChild>
-                <Link href="/test" className="flex items-center gap-2">
+                <Link href="/courses" className="flex items-center gap-2">
                   <ArrowRightIcon className="w-4 h-4" />
-                  Connect Google Classroom
+                  Go to Courses
                 </Link>
               </Button>
             ) : (

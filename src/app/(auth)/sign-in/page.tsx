@@ -1,33 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import SignInForm from "@/components/auth/signin-form";
 import { Header } from "@/components/ui/header";
-import { authClient } from "@/lib/auth-client";
+import { useAuthContext } from "@/components/auth/auth-provider";
 
-export default function SignInPage() {
+function SignInContent() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const { user, loading } = useAuthContext();
 
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const session = await authClient.getSession();
-                if (session?.data) {
-                    // User is already signed in, redirect to courses
-                    router.push("/courses");
-                    return;
-                }
-            } catch (error) {
-                console.error("Auth check error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, [router]);
+        if (!loading && user) {
+            const redirectTo = searchParams.get('redirect') || '/';
+            router.replace(redirectTo);
+        }
+    }, [user, loading, router, searchParams]);
 
     if (loading) {
         return (
@@ -43,6 +32,10 @@ export default function SignInPage() {
         );
     }
 
+    if (user) {
+        return null;
+    }
+
     return (
         <div className="min-h-screen bg-background">
             <Header />
@@ -50,5 +43,13 @@ export default function SignInPage() {
                 <SignInForm />
             </div>
         </div>
+    );
+}
+
+export default function SignInPage() {
+    return (
+        <Suspense>
+            <SignInContent />
+        </Suspense>
     );
 }
