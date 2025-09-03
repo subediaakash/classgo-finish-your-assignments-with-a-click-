@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
         console.log("✅ Serving assignments from Redis cache");
         return NextResponse.json(JSON.parse(cachedAssignments));
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       console.warn("[Redis] skipping cache get due to connection error");
     }
@@ -174,6 +175,7 @@ export async function GET(req: NextRequest) {
     try {
       await redis.set(cacheKey, JSON.stringify(responsePayload), "EX", 21600);
       console.log("🌀 Fetched fresh assignments and cached them");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       console.warn("[Redis] skipping cache set due to connection error");
     }
