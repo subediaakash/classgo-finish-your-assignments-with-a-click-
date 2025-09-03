@@ -186,6 +186,8 @@ export default function AssignmentDetailsPage({ params }: PageProps) {
     assignmentTitle: string;
     assignmentDescription?: string;
     materialsCount: number;
+    courseId: string;
+    assignmentId: string;
     pdfDoc: jsPDF;
     pdfData: AssignmentPDFData;
   } | null>(null);

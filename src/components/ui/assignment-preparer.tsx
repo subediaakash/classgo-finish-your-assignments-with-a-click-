@@ -14,6 +14,8 @@ interface GeneratedAssignmentData {
   assignmentTitle: string;
   assignmentDescription?: string;
   materialsCount: number;
+  courseId: string;
+  assignmentId: string;
   pdfDoc: jsPDF;
   pdfData: AssignmentPDFData;
 }
@@ -88,7 +90,11 @@ export function AssignmentPreparer({ assignmentId, courseId, description, onAssi
       
       // Call the callback to pass the generated assignment data
       onAssignmentGenerated({
-        ...data,
+        success: true,
+        aiResponse: data.aiResponse,
+        assignmentTitle: data.assignmentTitle,
+        assignmentDescription: description,
+        materialsCount: data.materialsCount,
         courseId,
         assignmentId,
         pdfDoc: doc,
