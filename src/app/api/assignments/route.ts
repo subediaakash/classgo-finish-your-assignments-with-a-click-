@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { PrismaClient } from "@/generated/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import redis from "@/lib/redis";
 
 const prisma = new PrismaClient();
 
@@ -42,7 +43,21 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Get the Google account to access the access token
+    // Create a unique cache key per user
+    const cacheKey = `assignments:user:${session.user.id}`;
+
+    // 1. Check cache first (best-effort)
+    try {
+      const cachedAssignments = await redis.get(cacheKey);
+      if (cachedAssignments) {
+        console.log("✅ Serving assignments from Redis cache");
+        return NextResponse.json(JSON.parse(cachedAssignments));
+      }
+    } catch (e) {
+      console.warn("[Redis] skipping cache get due to connection error");
+    }
+
+    // 2. If not cached → fetch from Google API
     const googleAccount = await prisma.account.findFirst({
       where: {
         userId: session.user.id,
@@ -57,7 +72,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Check if access token is expired
     if (
       googleAccount.accessTokenExpiresAt &&
       googleAccount.accessTokenExpiresAt < new Date()
@@ -68,7 +82,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Step 1: Get courses where the user is enrolled as a student
     const coursesResponse = await fetch(
       "https://classroom.googleapis.com/v1/courses?studentId=me",
       {
@@ -93,7 +106,6 @@ export async function GET(req: NextRequest) {
 
     const assignments: AssignmentSummary[] = [];
 
-    // Step 2: Loop through courses and get assignments
     for (const course of courses) {
       const courseId = course.id;
       const courseName = course.name;
@@ -110,13 +122,12 @@ export async function GET(req: NextRequest) {
 
       if (!courseworkResponse.ok) {
         console.error(`Error fetching coursework for course ${courseId}`);
-        continue; // Skip to next course if there's an error
+        continue;
       }
 
       const courseworkData = await courseworkResponse.json();
       const courseWork: ClassroomCourseWork[] = courseworkData.courseWork || [];
 
-      // Step 3: For each assignment, get the current user's submission status
       for (const work of courseWork) {
         const submissionsResponse = await fetch(
           `https://classroom.googleapis.com/v1/courses/${courseId}/courseWork/${work.id}/studentSubmissions?userId=me`,
@@ -141,7 +152,6 @@ export async function GET(req: NextRequest) {
             status: submission?.state ?? "CREATED",
           });
         } else {
-          // If we can't get submission status, still add the assignment
           assignments.push({
             id: work.id,
             courseId,
@@ -154,11 +164,21 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const responsePayload = {
       success: true,
       assignments,
       totalAssignments: assignments.length,
-    });
+    };
+
+    // 3. Save to Redis with expiration (best-effort)
+    try {
+      await redis.set(cacheKey, JSON.stringify(responsePayload), "EX", 21600);
+      console.log("🌀 Fetched fresh assignments and cached them");
+    } catch (e) {
+      console.warn("[Redis] skipping cache set due to connection error");
+    }
+
+    return NextResponse.json(responsePayload);
   } catch (error) {
     console.error("Error fetching assignments:", error);
     return NextResponse.json(
