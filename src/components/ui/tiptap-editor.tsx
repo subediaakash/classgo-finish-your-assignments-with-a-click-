@@ -17,6 +17,7 @@ interface TipTapEditorProps {
     course: string;
     stream: string;
   };
+  isSaving: boolean;
   onSave: (content: string, studentInfo: {
     name: string;
     usn: string;
@@ -28,7 +29,7 @@ interface TipTapEditorProps {
   onCancelEdit: () => void;
 }
 
-export function TipTapEditor({ content, studentInfo, onSave, onPreview, onCancelEdit }: TipTapEditorProps) {
+export function TipTapEditor({ content, studentInfo, isSaving, onSave, onPreview, onCancelEdit }: TipTapEditorProps) {
   const [isClient, setIsClient] = useState(false);
   const [localStudentInfo, setLocalStudentInfo] = useState(studentInfo);
 
@@ -114,11 +115,12 @@ export function TipTapEditor({ content, studentInfo, onSave, onPreview, onCancel
                 // Close edit mode after saving
                 onCancelEdit();
               }}
+              disabled={isSaving}
               size="sm"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <SaveIcon className="w-4 h-4 mr-2" />
-              Save
+              {isSaving ? 'Saving...' : 'Save'}
             </Button>
             <Button
               onClick={onCancelEdit}
