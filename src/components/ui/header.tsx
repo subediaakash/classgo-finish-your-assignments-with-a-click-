@@ -50,7 +50,7 @@ export function Header({ user: propUser, onSignOut }: HeaderProps) {
   }, [isMenuOpen]);
 
   return (
-    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-[9998]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -109,7 +109,7 @@ export function Header({ user: propUser, onSignOut }: HeaderProps) {
 
                 {isMenuOpen && (
                   <div 
-                    className="absolute right-0 mt-2 w-56 z-50 rounded-lg border border-border bg-popover text-popover-foreground shadow-2xl py-2"
+                    className="absolute right-0 mt-2 w-56 z-[9999] rounded-lg border border-border bg-popover text-popover-foreground shadow-2xl py-2"
                   >
                     <div className="px-4 py-3 border-b border-border">
                       <div className="flex items-center space-x-3">
